@@ -46,20 +46,35 @@ export function TripsManager() {
 
   const fetchTrips = async () => {
     try {
-      let query = supabase.from('trips').select(`
-        *,
-        profiles(full_name, email)
-      `);
+      let query = supabase.from('trips').select('*');
 
       // If user is not a scientist/admin, only show their own trips
       if (!isScientist()) {
         query = query.eq('user_id', user?.id);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data: tripsData, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTrips((data as any) || []);
+
+      // If we have trips and user is scientist/admin, fetch user profiles for display
+      if (tripsData && tripsData.length > 0 && isScientist()) {
+        const userIds = [...new Set(tripsData.map(trip => trip.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
+
+        // Merge profile data with trips
+        const tripsWithProfiles = tripsData.map(trip => ({
+          ...trip,
+          profiles: profilesData?.find(profile => profile.user_id === trip.user_id) || null
+        }));
+        
+        setTrips(tripsWithProfiles || []);
+      } else {
+        setTrips(tripsData || []);
+      }
     } catch (error) {
       console.error('Error fetching trips:', error);
       toast.error('Failed to load trips');
