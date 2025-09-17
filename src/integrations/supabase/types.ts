@@ -14,7 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      feedback: {
+        Row: {
+          ai_response: string | null
+          created_at: string
+          id: string
+          rating: number | null
+          session_id: string | null
+          suggestions: Json | null
+          travel_issue_severity: string | null
+          travel_issue_type: string | null
+          type: string
+          user_id: string | null
+          user_message: string | null
+        }
+        Insert: {
+          ai_response?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          session_id?: string | null
+          suggestions?: Json | null
+          travel_issue_severity?: string | null
+          travel_issue_type?: string | null
+          type: string
+          user_id?: string | null
+          user_message?: string | null
+        }
+        Update: {
+          ai_response?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          session_id?: string | null
+          suggestions?: Json | null
+          travel_issue_severity?: string | null
+          travel_issue_type?: string | null
+          type?: string
+          user_id?: string | null
+          user_message?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tourist_spots: {
+        Row: {
+          category: string
+          cost_level: string | null
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          name: string
+          rating: number | null
+        }
+        Insert: {
+          category: string
+          cost_level?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          name: string
+          rating?: number | null
+        }
+        Update: {
+          category?: string
+          cost_level?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          name?: string
+          rating?: number | null
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          created_at: string
+          destination: string
+          end_date: string
+          id: string
+          notes: string | null
+          purpose: string | null
+          start_date: string
+          travel_mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          purpose?: string | null
+          start_date: string
+          travel_mode: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          purpose?: string | null
+          start_date?: string
+          travel_mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
