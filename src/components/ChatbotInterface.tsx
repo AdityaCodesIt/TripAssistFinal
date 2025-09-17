@@ -19,7 +19,14 @@ const ChatbotInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const safeId = () => {
+    try {
+      // @ts-ignore - crypto may not have randomUUID in some browsers
+      if (typeof crypto !== 'undefined' && (crypto as any).randomUUID) return (crypto as any).randomUUID();
+    } catch {}
+    return 'sess-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  };
+  const [sessionId] = useState(safeId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
