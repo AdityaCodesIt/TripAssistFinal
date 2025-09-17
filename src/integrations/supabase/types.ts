@@ -58,29 +58,29 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
-          role: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
-          role?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
-          role?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -127,39 +127,63 @@ export type Database = {
       }
       trips: {
         Row: {
-          created_at: string
+          additional_notes: string | null
+          created_at: string | null
           destination: string
-          end_date: string
+          end_time: string
           id: string
-          notes: string | null
-          purpose: string | null
-          start_date: string
-          travel_mode: string
-          updated_at: string
+          mode: string
+          origin: string
+          start_time: string
+          trip_number: number
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          additional_notes?: string | null
+          created_at?: string | null
           destination: string
-          end_date: string
+          end_time: string
           id?: string
-          notes?: string | null
-          purpose?: string | null
-          start_date: string
-          travel_mode: string
-          updated_at?: string
+          mode: string
+          origin: string
+          start_time: string
+          trip_number: number
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          additional_notes?: string | null
+          created_at?: string | null
           destination?: string
-          end_date?: string
+          end_time?: string
           id?: string
-          notes?: string | null
-          purpose?: string | null
-          start_date?: string
-          travel_mode?: string
-          updated_at?: string
+          mode?: string
+          origin?: string
+          start_time?: string
+          trip_number?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -169,10 +193,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "scientist" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -299,6 +333,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "scientist", "admin"],
+    },
   },
 } as const
