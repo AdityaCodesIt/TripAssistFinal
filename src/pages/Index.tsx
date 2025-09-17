@@ -3,61 +3,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TripAssistDashboard from '@/components/TripAssistDashboard';
-import AuthLogin from '@/components/AuthLogin';
 import ChatbotInterface from '@/components/ChatbotInterface';
-import { LogOut, Bot, BarChart3, Users } from 'lucide-react';
-
-interface User {
-  username: string;
-  role: string;
-}
+import { Bot, BarChart3, Users } from 'lucide-react';
 
 const Index = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
-
-  const handleLogin = (userData: User) => {
-    setUser(userData);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setActiveTab('dashboard');
-  };
-
-  // If user is not logged in, show login screen
-  if (!user) {
-    return <AuthLogin onLogin={handleLogin} />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-secondary/30">
-      {/* Header with user info and logout */}
+      {/* Header */}
       <div className="bg-card shadow-card border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold bg-gradient-travel bg-clip-text text-transparent">
-              TripAssist Portal
-            </h1>
-            <Badge variant="secondary" className="gap-2">
-              <Users className="h-3 w-3" />
-              {user.role}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user.username}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <h1 className="text-2xl font-bold bg-gradient-travel bg-clip-text text-transparent">
+            TripAssist Portal
+          </h1>
         </div>
       </div>
 
