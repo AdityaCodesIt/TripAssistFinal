@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useNominatimSearch } from '@/hooks/useNominatimSearch';
 import { MapComponent } from '@/components/MapComponent';
@@ -61,6 +62,7 @@ const TripAssistDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(50); // km
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Use the geolocation hook
   const { location: userLocation, error: locationError, loading: locationLoading } = useGeolocation();
@@ -156,8 +158,17 @@ const TripAssistDashboard: React.FC = () => {
     }
   };
 
-  const handleSubmitTrip = () => {
+  const handleSubmitTrip = async () => {
     console.log('Current trip data:', currentTrip);
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to submit trips.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Check required fields
     if (!currentTrip.origin?.trim() || 
@@ -185,28 +196,75 @@ const TripAssistDashboard: React.FC = () => {
       return;
     }
 
-    const newTrip: Trip = {
-      id: Date.now().toString(),
-      tripNumber: `TR${trips.length + 1}`,
-      origin: currentTrip.origin || '',
-      destination: currentTrip.destination || '',
-      departureTime: currentTrip.departureTime || '',
-      arrivalTime: currentTrip.arrivalTime || '',
-      travelMode: currentTrip.travelMode || 'car',
-      purpose: currentTrip.purpose || '',
-      cost: currentTrip.cost || 0,
-      companions: currentTrip.companions || 1,
-      notes: currentTrip.notes || '',
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      // Convert datetime-local format to ISO string
+      const startTime = new Date(currentTrip.departureTime!).toISOString();
+      const endTime = new Date(currentTrip.arrivalTime!).toISOString();
+      
+      const tripData = {
+        user_id: user.id,
+        trip_number: trips.length + 1,
+        origin: currentTrip.origin!.trim(),
+        destination: currentTrip.destination!.trim(),
+        mode: currentTrip.travelMode!,
+        start_time: startTime,
+        end_time: endTime,
+        additional_notes: `Purpose: ${currentTrip.purpose}${currentTrip.notes ? `\nNotes: ${currentTrip.notes}` : ''}${currentTrip.cost ? `\nCost: $${currentTrip.cost}` : ''}${currentTrip.companions ? `\nCompanions: ${currentTrip.companions}` : ''}`
+      };
 
-    setTrips([...trips, newTrip]);
-    setCurrentTrip({});
-    
-    toast({
-      title: "Trip submitted successfully!",
-      description: `Trip ${newTrip.tripNumber} has been recorded.`,
-    });
+      console.log('Submitting trip data:', tripData);
+
+      const { data, error } = await supabase
+        .from('trips')
+        .insert([tripData])
+        .select();
+
+      if (error) {
+        console.error('Error saving trip:', error);
+        toast({
+          title: "Error saving trip",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Trip saved successfully:', data);
+      
+      // Update local state with the new trip
+      if (data && data[0]) {
+        const newTrip: Trip = {
+          id: data[0].id,
+          tripNumber: `TR${data[0].trip_number}`,
+          origin: data[0].origin,
+          destination: data[0].destination,
+          departureTime: new Date(data[0].start_time).toISOString().slice(0, 16),
+          arrivalTime: new Date(data[0].end_time).toISOString().slice(0, 16),
+          travelMode: data[0].mode as 'car' | 'plane' | 'train' | 'bus',
+          purpose: currentTrip.purpose || '',
+          cost: currentTrip.cost || 0,
+          companions: currentTrip.companions || 1,
+          notes: currentTrip.notes || '',
+          createdAt: data[0].created_at,
+        };
+        
+        setTrips([...trips, newTrip]);
+      }
+      
+      setCurrentTrip({});
+      
+      toast({
+        title: "Trip submitted successfully!",
+        description: "Your trip has been saved to the database.",
+      });
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving the trip.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteTrip = (tripId: string) => {
