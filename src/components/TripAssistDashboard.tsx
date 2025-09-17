@@ -8,7 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Clock, Car, Plane, Train, Bus, Trash2, MessageCircle, Star, PlusCircle, Calendar, Users, DollarSign } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useNominatimSearch } from '@/hooks/useNominatimSearch';
+import { MapComponent } from '@/components/MapComponent';
+import { MapPin, Clock, Car, Plane, Train, Bus, Trash2, MessageCircle, Star, PlusCircle, Calendar, Users, DollarSign, Search } from 'lucide-react';
 
 interface Trip {
   id: string;
@@ -38,9 +42,12 @@ interface TouristSpot {
   id: string;
   name: string;
   description: string;
-  cost: 'low' | 'medium' | 'high';
+  cost_level: 'low' | 'medium' | 'high';
   category: string;
-  coordinates: { lat: number; lng: number };
+  latitude: number;
+  longitude: number;
+  location: string;
+  rating?: number;
 }
 
 const TripAssistDashboard: React.FC = () => {
@@ -48,77 +55,107 @@ const TripAssistDashboard: React.FC = () => {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [currentTrip, setCurrentTrip] = useState<Partial<Trip>>({});
   const [currentFeedback, setCurrentFeedback] = useState<Partial<Feedback>>({});
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [touristSpots, setTouristSpots] = useState<TouristSpot[]>([]);
   const [tripPlan, setTripPlan] = useState<any>(null);
   const [planDays, setPlanDays] = useState<number>(3);
   const [budgetPreference, setBudgetPreference] = useState<'low' | 'medium' | 'high'>('medium');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchRadius, setSearchRadius] = useState<number>(50); // km
   const { toast } = useToast();
+  
+  // Use the geolocation hook
+  const { location: userLocation, error: locationError, loading: locationLoading } = useGeolocation();
+  const { results: searchResults, searchPlaces, loading: searchLoading } = useNominatimSearch();
 
-  // Get user location on component mount
+  // Fetch tourist spots from database
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-          toast({
-            title: "Location detected",
-            description: "Your current location has been detected for better recommendations.",
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast({
-            title: "Location access denied",
-            description: "Please enable location access for better travel recommendations.",
-            variant: "destructive",
-          });
+    const fetchTouristSpots = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('tourist_spots')
+          .select('*')
+          .order('rating', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching tourist spots:', error);
+          return;
         }
+
+        setTouristSpots((data || []).map(spot => ({
+          ...spot,
+          cost_level: spot.cost_level as 'low' | 'medium' | 'high'
+        })));
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchTouristSpots();
+  }, []);
+
+  // Show location-related toasts
+  useEffect(() => {
+    if (userLocation) {
+      toast({
+        title: "Location detected",
+        description: "Your current location has been detected for better recommendations.",
+      });
+    }
+    if (locationError) {
+      toast({
+        title: "Location access denied",
+        description: "Please enable location access for better travel recommendations.",
+        variant: "destructive",
+      });
+    }
+  }, [userLocation, locationError, toast]);
+
+  // Calculate distance between two coordinates
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  };
+
+  // Filter tourist spots based on user location and search
+  const getFilteredTouristSpots = (): TouristSpot[] => {
+    let filtered = touristSpots;
+
+    // Filter by distance if user location is available
+    if (userLocation) {
+      filtered = filtered.filter(spot => {
+        const distance = calculateDistance(
+          userLocation[0], userLocation[1],
+          spot.latitude, spot.longitude
+        );
+        return distance <= searchRadius;
+      });
+    }
+
+    // Filter by search query if provided
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(spot =>
+        spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        spot.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        spot.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-  }, [toast]);
 
-  // Mock tourist spots data (in real app, this would come from Google Maps API)
-  useEffect(() => {
-    const mockSpots: TouristSpot[] = [
-      {
-        id: '1',
-        name: 'Historic Downtown',
-        description: 'Beautiful historic district with museums and galleries',
-        cost: 'low',
-        category: 'Culture',
-        coordinates: { lat: 40.7128, lng: -74.0060 }
-      },
-      {
-        id: '2',
-        name: 'Luxury Resort & Spa',
-        description: 'Premium wellness experience with world-class amenities',
-        cost: 'high',
-        category: 'Wellness',
-        coordinates: { lat: 40.7589, lng: -73.9851 }
-      },
-      {
-        id: '3',
-        name: 'Local Food Market',
-        description: 'Authentic local cuisine at affordable prices',
-        cost: 'low',
-        category: 'Food',
-        coordinates: { lat: 40.7505, lng: -73.9934 }
-      },
-      {
-        id: '4',
-        name: 'Adventure Park',
-        description: 'Outdoor activities and adventure sports',
-        cost: 'medium',
-        category: 'Adventure',
-        coordinates: { lat: 40.7829, lng: -73.9654 }
-      }
-    ];
-    setTouristSpots(mockSpots);
-  }, []);
+    return filtered;
+  };
+
+  const handlePlaceSearch = () => {
+    if (searchQuery.trim()) {
+      searchPlaces(searchQuery, 'IN');
+    }
+  };
 
   const handleSubmitTrip = () => {
     if (!currentTrip.origin || !currentTrip.destination || !currentTrip.travelMode) {
@@ -191,7 +228,7 @@ const TripAssistDashboard: React.FC = () => {
   };
 
   const generateTripPlan = () => {
-    const filteredSpots = touristSpots.filter(spot => spot.cost === budgetPreference);
+    const filteredSpots = touristSpots.filter(spot => spot.cost_level === budgetPreference);
     const selectedSpots = filteredSpots.slice(0, planDays * 2); // 2 spots per day
 
     const plan = Array.from({ length: planDays }, (_, index) => ({
@@ -230,7 +267,7 @@ const TripAssistDashboard: React.FC = () => {
           {userLocation && (
             <Badge variant="secondary" className="gap-2">
               <MapPin className="h-4 w-4" />
-              Location detected: {userLocation.lat.toFixed(2)}, {userLocation.lng.toFixed(2)}
+              Location detected: {userLocation[0].toFixed(2)}, {userLocation[1].toFixed(2)}
             </Badge>
           )}
         </div>
@@ -528,35 +565,129 @@ const TripAssistDashboard: React.FC = () => {
 
           {/* Tourist Spots Tab */}
           <TabsContent value="spots">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Popular Tourist Spots Near You
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {touristSpots.map((spot) => (
-                    <div key={spot.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold">{spot.name}</h3>
-                        <Badge 
-                          variant={spot.cost === 'low' ? 'secondary' : spot.cost === 'medium' ? 'default' : 'destructive'}
-                        >
-                          {spot.cost} cost
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">{spot.description}</p>
-                      <div className="flex justify-between items-center">
-                        <Badge variant="outline">{spot.category}</Badge>
-                        <Button size="sm" variant="outline">View Details</Button>
-                      </div>
+            <div className="space-y-6">
+              {/* Search and Filters */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Find Tourist Spots Near You
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Search tourist spots..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="w-32">
+                      <Input
+                        type="number"
+                        placeholder="Radius (km)"
+                        value={searchRadius}
+                        onChange={(e) => setSearchRadius(Number(e.target.value))}
+                      />
+                    </div>
+                    <Button onClick={handlePlaceSearch} disabled={searchLoading}>
+                      {searchLoading ? 'Searching...' : 'Search'}
+                    </Button>
+                  </div>
+                  
+                  {locationLoading && (
+                    <p className="text-sm text-muted-foreground">Getting your location...</p>
+                  )}
+                  
+                  {locationError && (
+                    <p className="text-sm text-destructive">Location access denied. Enable location for better results.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Map View */}
+              {userLocation && (
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle>Map View</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <MapComponent
+                      center={userLocation}
+                      zoom={12}
+                      userLocation={userLocation}
+                      touristSpots={getFilteredTouristSpots().map(spot => ({
+                        id: spot.id,
+                        name: spot.name,
+                        latitude: spot.latitude,
+                        longitude: spot.longitude,
+                        category: spot.category,
+                        cost: spot.cost_level,
+                        description: spot.description
+                      }))}
+                      className="h-96 w-full"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Tourist Spots List */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Tourist Spots ({getFilteredTouristSpots().length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {getFilteredTouristSpots().map((spot) => (
+                      <div key={spot.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold">{spot.name}</h3>
+                          <Badge 
+                            variant={spot.cost_level === 'low' ? 'secondary' : spot.cost_level === 'medium' ? 'default' : 'destructive'}
+                          >
+                            {spot.cost_level} cost
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{spot.description}</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Badge variant="outline">{spot.category}</Badge>
+                            {spot.rating && (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-current text-yellow-500" />
+                                <span className="text-sm">{spot.rating}</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{spot.location}</p>
+                          {userLocation && (
+                            <p className="text-xs text-muted-foreground">
+                              Distance: {calculateDistance(
+                                userLocation[0], userLocation[1],
+                                spot.latitude, spot.longitude
+                              ).toFixed(1)} km
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {getFilteredTouristSpots().length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No tourist spots found in your area.</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Try increasing the search radius or adjusting your search terms.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Trip Planner Tab */}
