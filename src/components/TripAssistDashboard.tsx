@@ -157,10 +157,29 @@ const TripAssistDashboard: React.FC = () => {
   };
 
   const handleSubmitTrip = () => {
-    if (!currentTrip.origin || !currentTrip.destination || !currentTrip.travelMode) {
+    console.log('Current trip data:', currentTrip);
+    
+    // Check required fields
+    if (!currentTrip.origin?.trim() || 
+        !currentTrip.destination?.trim() || 
+        !currentTrip.travelMode ||
+        !currentTrip.departureTime ||
+        !currentTrip.arrivalTime ||
+        !currentTrip.purpose?.trim()) {
+      
+      const missingFields = [];
+      if (!currentTrip.origin?.trim()) missingFields.push('Origin');
+      if (!currentTrip.destination?.trim()) missingFields.push('Destination');
+      if (!currentTrip.travelMode) missingFields.push('Travel Mode');
+      if (!currentTrip.departureTime) missingFields.push('Departure Time');
+      if (!currentTrip.arrivalTime) missingFields.push('Arrival Time');
+      if (!currentTrip.purpose?.trim()) missingFields.push('Purpose');
+      
+      console.log('Missing fields:', missingFields);
+      
       toast({
         title: "Missing information",
-        description: "Please fill in all required fields.",
+        description: `Please fill in: ${missingFields.join(', ')}`,
         variant: "destructive",
       });
       return;
