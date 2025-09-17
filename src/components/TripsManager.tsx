@@ -42,7 +42,7 @@ export function TripsManager() {
     if (user) {
       fetchTrips();
     }
-  }, [user, isScientist]);
+  }, [user]);
 
   const fetchTrips = async () => {
     try {
