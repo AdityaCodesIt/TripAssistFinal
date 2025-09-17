@@ -22,6 +22,13 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          light: "hsl(var(--primary-light))",
+          dark: "hsl(var(--primary-dark))",
+        },
+        travel: {
+          orange: "hsl(var(--travel-orange))",
+          green: "hsl(var(--travel-green))",
+          coral: "hsl(var(--travel-coral))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -57,6 +64,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-sky': 'var(--gradient-sky)',
+        'gradient-sunset': 'var(--gradient-sunset)',
+        'gradient-travel': 'var(--gradient-travel)',
+      },
+      boxShadow: {
+        'travel': 'var(--shadow-travel)',
+        'card': 'var(--shadow-card)',
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -2,32 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* TripAssist Travel App Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Travel-themed color palette */
+    --background: 218 40% 98%;
+    --foreground: 215 30% 15%;
+    
+    /* Travel blue theme */
+    --primary: 210 90% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 90% 65%;
+    --primary-dark: 210 90% 35%;
+    
+    /* Travel accent colors */
+    --secondary: 195 80% 88%;
+    --secondary-foreground: 210 90% 20%;
+    
+    --travel-orange: 25 90% 60%;
+    --travel-green: 145 65% 45%;
+    --travel-coral: 15 85% 65%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 30% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --muted: 218 30% 94%;
+    --muted-foreground: 215 20% 50%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 195 80% 88%;
+    --accent-foreground: 210 90% 20%;
+    
+    /* Travel-specific gradients */
+    --gradient-sky: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-light)) 100%);
+    --gradient-sunset: linear-gradient(135deg, hsl(var(--travel-orange)) 0%, hsl(var(--travel-coral)) 100%);
+    --gradient-travel: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--travel-green)) 100%);
+    
+    /* Travel shadows */
+    --shadow-travel: 0 10px 30px -5px hsl(var(--primary) / 0.2);
+    --shadow-card: 0 4px 15px -2px hsl(var(--primary) / 0.1);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -56,20 +72,26 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 215 30% 8%;
+    --foreground: 218 40% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 30% 10%;
+    --card-foreground: 218 40% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 30% 10%;
+    --popover-foreground: 218 40% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 90% 55%;
+    --primary-foreground: 215 30% 8%;
+    --primary-light: 210 90% 70%;
+    --primary-dark: 210 90% 40%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 25% 20%;
+    --secondary-foreground: 218 40% 95%;
+    
+    --travel-orange: 25 90% 65%;
+    --travel-green: 145 65% 50%;
+    --travel-coral: 15 85% 70%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
