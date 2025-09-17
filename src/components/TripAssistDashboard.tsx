@@ -11,9 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useNominatimSearch } from '@/hooks/useNominatimSearch';
-const LazyMapComponent = React.lazy(() => import('@/components/MapComponent').then(m => ({ default: m.MapComponent })));
+import { MapComponent } from '@/components/MapComponent';
 import { MapErrorBoundary } from '@/components/MapErrorBoundary';
-import { MapPin, Clock, Car, Plane, Train, Bus, Trash2, MessageCircle, Star, PlusCircle, Calendar, Users, DollarSign, Search } from 'lucide-react';
+import ChatbotInterface from '@/components/ChatbotInterface';
+import { MapPin, Clock, Car, Plane, Train, Bus, Trash2, MessageCircle, Star, PlusCircle, Bot, Calendar, Users, DollarSign, Search } from 'lucide-react';
 
 interface Trip {
   id: string;
@@ -57,9 +58,6 @@ const TripAssistDashboard: React.FC = () => {
   const [currentTrip, setCurrentTrip] = useState<Partial<Trip>>({});
   const [currentFeedback, setCurrentFeedback] = useState<Partial<Feedback>>({});
   const [touristSpots, setTouristSpots] = useState<TouristSpot[]>([]);
-  const [tripPlan, setTripPlan] = useState<any>(null);
-  const [planDays, setPlanDays] = useState<number>(3);
-  const [budgetPreference, setBudgetPreference] = useState<'low' | 'medium' | 'high'>('medium');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(50); // km
   const { toast } = useToast();
@@ -228,22 +226,6 @@ const TripAssistDashboard: React.FC = () => {
     });
   };
 
-  const generateTripPlan = () => {
-    const filteredSpots = touristSpots.filter(spot => spot.cost_level === budgetPreference);
-    const selectedSpots = filteredSpots.slice(0, planDays * 2); // 2 spots per day
-
-    const plan = Array.from({ length: planDays }, (_, index) => ({
-      day: index + 1,
-      spots: selectedSpots.slice(index * 2, (index + 1) * 2),
-      estimatedCost: budgetPreference === 'low' ? 50 : budgetPreference === 'medium' ? 150 : 300,
-    }));
-
-    setTripPlan(plan);
-    toast({
-      title: "Trip plan generated!",
-      description: `Created a ${planDays}-day itinerary based on your preferences.`,
-    });
-  };
 
   const getTravelModeIcon = (mode: string) => {
     switch (mode) {
@@ -279,7 +261,7 @@ const TripAssistDashboard: React.FC = () => {
             <TabsTrigger value="records">Trip Records</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="spots">Tourist Spots</TabsTrigger>
-            <TabsTrigger value="planner">Trip Planner</TabsTrigger>
+            <TabsTrigger value="chatbot">AI Assistant</TabsTrigger>
           </TabsList>
 
           {/* Trip Entry Tab */}
@@ -615,8 +597,7 @@ const TripAssistDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <MapErrorBoundary>
-                      <Suspense fallback={<div className="h-96 w-full rounded-lg grid place-items-center text-sm text-muted-foreground">Loading map…</div>}>
-                        <LazyMapComponent
+                      <MapComponent
                           center={userLocation}
                           zoom={12}
                           userLocation={userLocation}
@@ -631,7 +612,6 @@ const TripAssistDashboard: React.FC = () => {
                           }))}
                           className="h-96 w-full"
                         />
-                      </Suspense>
                     </MapErrorBoundary>
                   </CardContent>
                 </Card>
@@ -695,74 +675,19 @@ const TripAssistDashboard: React.FC = () => {
             </div>
           </TabsContent>
 
-          {/* Trip Planner Tab */}
-          <TabsContent value="planner">
+          {/* AI Chatbot Tab */}
+          <TabsContent value="chatbot">
             <Card className="shadow-card">
-              <CardHeader className="bg-gradient-travel text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-sky text-primary-foreground rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  AI Trip Planner
+                  <Bot className="h-5 w-5" />
+                  AI Travel Assistant
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="planDays">Number of Days</Label>
-                    <Input
-                      id="planDays"
-                      type="number"
-                      min="1"
-                      max="14"
-                      value={planDays}
-                      onChange={(e) => setPlanDays(Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="budget">Budget Preference</Label>
-                    <select
-                      id="budget"
-                      className="w-full p-2 border rounded-md"
-                      value={budgetPreference}
-                      onChange={(e) => setBudgetPreference(e.target.value as any)}
-                    >
-                      <option value="low">Budget-friendly</option>
-                      <option value="medium">Moderate</option>
-                      <option value="high">Luxury</option>
-                    </select>
-                  </div>
+              <CardContent className="p-0">
+                <div className="h-[600px]">
+                  <ChatbotInterface />
                 </div>
-                <Button 
-                  onClick={generateTripPlan}
-                  className="w-full bg-gradient-travel hover:opacity-90"
-                >
-                  Generate Trip Plan
-                </Button>
-
-                {/* Generated Trip Plan */}
-                {tripPlan && (
-                  <div className="mt-6 space-y-4">
-                    <h3 className="text-lg font-semibold">Your {planDays}-Day Itinerary</h3>
-                    {tripPlan.map((day: any) => (
-                      <div key={day.day} className="border rounded-lg p-4 bg-muted/20">
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-semibold">Day {day.day}</h4>
-                          <Badge variant="secondary">
-                            Estimated Cost: ${day.estimatedCost}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {day.spots.map((spot: TouristSpot) => (
-                            <div key={spot.id} className="border rounded-lg p-3 bg-background">
-                              <h5 className="font-medium">{spot.name}</h5>
-                              <p className="text-sm text-muted-foreground">{spot.description}</p>
-                              <Badge variant="outline" className="mt-2">{spot.category}</Badge>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
