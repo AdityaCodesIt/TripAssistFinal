@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useNominatimSearch } from '@/hooks/useNominatimSearch';
-import { MapComponent } from '@/components/MapComponent';
+const LazyMapComponent = React.lazy(() => import('@/components/MapComponent').then(m => ({ default: m.MapComponent })));
 import { MapPin, Clock, Car, Plane, Train, Bus, Trash2, MessageCircle, Star, PlusCircle, Calendar, Users, DollarSign, Search } from 'lucide-react';
 
 interface Trip {
@@ -613,21 +613,23 @@ const TripAssistDashboard: React.FC = () => {
                     <CardTitle>Map View</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <MapComponent
-                      center={userLocation}
-                      zoom={12}
-                      userLocation={userLocation}
-                      touristSpots={getFilteredTouristSpots().map(spot => ({
-                        id: spot.id,
-                        name: spot.name,
-                        latitude: spot.latitude,
-                        longitude: spot.longitude,
-                        category: spot.category,
-                        cost: spot.cost_level,
-                        description: spot.description
-                      }))}
-                      className="h-96 w-full"
-                    />
+                    <Suspense fallback={<div className="h-96 w-full rounded-lg grid place-items-center text-sm text-muted-foreground">Loading map…</div>}>
+                      <LazyMapComponent
+                        center={userLocation}
+                        zoom={12}
+                        userLocation={userLocation}
+                        touristSpots={getFilteredTouristSpots().map(spot => ({
+                          id: spot.id,
+                          name: spot.name,
+                          latitude: spot.latitude,
+                          longitude: spot.longitude,
+                          category: spot.category,
+                          cost: spot.cost_level,
+                          description: spot.description
+                        }))}
+                        className="h-96 w-full"
+                      />
+                    </Suspense>
                   </CardContent>
                 </Card>
               )}
