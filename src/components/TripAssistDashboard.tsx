@@ -589,33 +589,17 @@ const TripAssistDashboard: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Map View */}
-              {userLocation && (
-                <Card className="shadow-card">
-                  <CardHeader>
-                    <CardTitle>Map View</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MapErrorBoundary>
-                      <MapComponent
-                          center={userLocation}
-                          zoom={12}
-                          userLocation={userLocation}
-                          touristSpots={getFilteredTouristSpots().map(spot => ({
-                            id: spot.id,
-                            name: spot.name,
-                            latitude: spot.latitude,
-                            longitude: spot.longitude,
-                            category: spot.category,
-                            cost: spot.cost_level,
-                            description: spot.description
-                          }))}
-                          className="h-96 w-full"
-                        />
-                    </MapErrorBoundary>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Map View - Temporarily disabled to fix render error */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Map View</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-96 w-full rounded-lg bg-muted/20 grid place-items-center text-sm text-muted-foreground">
+                    Map temporarily disabled - working on fix
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Tourist Spots List */}
               <Card className="shadow-card">
