@@ -94,6 +94,48 @@ const TripAssistDashboard: React.FC = () => {
     fetchTouristSpots();
   }, []);
 
+  // Fetch user's trips from database
+  useEffect(() => {
+    const fetchTrips = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('trips')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching trips:', error);
+          return;
+        }
+
+        // Convert database trips to local Trip format
+        const formattedTrips: Trip[] = (data || []).map(trip => ({
+          id: trip.id,
+          tripNumber: `TR${trip.trip_number}`,
+          origin: trip.origin,
+          destination: trip.destination,
+          departureTime: new Date(trip.start_time).toISOString().slice(0, 16),
+          arrivalTime: new Date(trip.end_time).toISOString().slice(0, 16),
+          travelMode: trip.mode as 'car' | 'plane' | 'train' | 'bus',
+          purpose: trip.additional_notes?.split('\n')[0]?.replace('Purpose: ', '') || '',
+          cost: 0, // Extract from notes if needed
+          companions: 1, // Extract from notes if needed
+          notes: trip.additional_notes || '',
+          createdAt: trip.created_at,
+        }));
+
+        setTrips(formattedTrips);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchTrips();
+  }, [user]);
+
   // Show location-related toasts
   useEffect(() => {
     if (userLocation) {
@@ -197,13 +239,35 @@ const TripAssistDashboard: React.FC = () => {
     }
 
     try {
+      // Get the next trip number from database
+      const { data: existingTrips, error: countError } = await supabase
+        .from('trips')
+        .select('trip_number')
+        .eq('user_id', user.id)
+        .order('trip_number', { ascending: false })
+        .limit(1);
+
+      if (countError) {
+        console.error('Error getting trip count:', countError);
+        toast({
+          title: "Error",
+          description: "Could not determine trip number.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const nextTripNumber = existingTrips && existingTrips.length > 0 
+        ? existingTrips[0].trip_number + 1 
+        : 1;
+
       // Convert datetime-local format to ISO string
       const startTime = new Date(currentTrip.departureTime!).toISOString();
       const endTime = new Date(currentTrip.arrivalTime!).toISOString();
       
       const tripData = {
         user_id: user.id,
-        trip_number: trips.length + 1,
+        trip_number: nextTripNumber,
         origin: currentTrip.origin!.trim(),
         destination: currentTrip.destination!.trim(),
         mode: currentTrip.travelMode!,
