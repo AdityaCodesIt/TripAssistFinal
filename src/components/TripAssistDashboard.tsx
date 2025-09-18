@@ -118,13 +118,13 @@ const TripAssistDashboard: React.FC = () => {
       name: 'Shri Radhagiridhari Temple, ISKCON', 
       cost: 'free', 
       distance: '5.9 km',
-      image: 'https://images.unsplash.com/photo-1609792858967-8d5ad5031dca?w=100&h=80&fit=crop&crop=center'
+      image: 'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?w=100&h=80&fit=crop&crop=center'
     },
     { 
       name: 'Our Lady of Velankanni Shrine, Bhatebunder (Uttan)', 
       cost: 'free', 
       distance: '11.4 km',
-      image: 'https://images.unsplash.com/photo-1548625361-ac2a31ba062e?w=100&h=80&fit=crop&crop=center'
+      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c9a4?w=100&h=80&fit=crop&crop=center'
     },
     { 
       name: 'Gaimukh Chowpatty', 
