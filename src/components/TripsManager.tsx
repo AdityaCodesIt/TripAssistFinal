@@ -37,6 +37,7 @@ export function TripsManager() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [nextTripNumber, setNextTripNumber] = useState<number | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -81,15 +82,41 @@ export function TripsManager() {
     } finally {
       setLoading(false);
     }
+};
+
+  // Compute the next trip number for the current user
+  const getNextTripNumber = async (): Promise<number> => {
+    if (!user?.id) return 1;
+    try {
+      const { data, error } = await supabase
+        .from('trips')
+        .select('trip_number')
+        .eq('user_id', user.id)
+        .order('trip_number', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      const next = data && data.length > 0 ? (data[0].trip_number as number) + 1 : 1;
+      setNextTripNumber(next);
+      return next;
+    } catch (err) {
+      console.error('Error computing next trip number:', err);
+      setNextTripNumber(1);
+      return 1;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    // Determine trip number: use existing when editing, otherwise compute next
+    const tripNumber = editingTrip 
+      ? parseInt(formData.get('trip_number') as string)
+      : (nextTripNumber ?? await getNextTripNumber());
+    
     const tripData = {
       user_id: user?.id,
-      trip_number: parseInt(formData.get('trip_number') as string),
+      trip_number: tripNumber,
       origin: formData.get('origin') as string,
       destination: formData.get('destination') as string,
       mode: formData.get('mode') as string,
@@ -172,10 +199,11 @@ export function TripsManager() {
     setIsDialogOpen(true);
   };
 
-  const openAddDialog = () => {
-    setEditingTrip(null);
-    setIsDialogOpen(true);
-  };
+const openAddDialog = async () => {
+  setEditingTrip(null);
+  setIsDialogOpen(true);
+  await getNextTripNumber();
+};
 
   if (loading) {
     return (
@@ -228,13 +256,27 @@ export function TripsManager() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="trip_number">Trip Number</Label>
-                      <Input
-                        id="trip_number"
-                        name="trip_number"
-                        type="number"
-                        required
-                        defaultValue={editingTrip?.trip_number}
-                      />
+                      {editingTrip ? (
+                        <Input
+                          id="trip_number"
+                          name="trip_number"
+                          type="number"
+                          required
+                          defaultValue={editingTrip.trip_number}
+                        />
+                      ) : (
+                        <>
+                          <Input
+                            id="trip_number"
+                            name="trip_number"
+                            type="number"
+                            value={nextTripNumber ?? ''}
+                            readOnly
+                            disabled
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Auto-assigned</p>
+                        </>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="mode">Mode</Label>
