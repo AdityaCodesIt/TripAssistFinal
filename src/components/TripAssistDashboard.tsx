@@ -62,6 +62,7 @@ const TripAssistDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(50); // km
   const [spotSearchQuery, setSpotSearchQuery] = useState<string>('');
+  const [spotsLoading, setSpotsLoading] = useState<boolean>(false);
 
   // Fixed tourist spots data for Bhayander Station
   const bhayaderSpots = [
@@ -284,6 +285,22 @@ const TripAssistDashboard: React.FC = () => {
     
     // Return empty array for any other search
     return [];
+  };
+
+  // Handle spot search with loading
+  const handleSpotSearch = (value: string) => {
+    setSpotSearchQuery(value);
+    
+    const query = value.toLowerCase();
+    if (query.includes('bhayander') && query.includes('station')) {
+      setSpotsLoading(true);
+      // Simulate loading for 1.5 seconds
+      setTimeout(() => {
+        setSpotsLoading(false);
+      }, 1500);
+    } else {
+      setSpotsLoading(false);
+    }
   };
 
   const handlePlaceSearch = () => {
@@ -813,7 +830,7 @@ const TripAssistDashboard: React.FC = () => {
               <CardHeader className="bg-gradient-sunset text-white rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  Tourist Spots near Bhayander Station
+                  Top Tourist Spots
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -823,50 +840,62 @@ const TripAssistDashboard: React.FC = () => {
                   <Input
                     placeholder="Search tourist spots..."
                     value={spotSearchQuery}
-                    onChange={(e) => setSpotSearchQuery(e.target.value)}
+                    onChange={(e) => handleSpotSearch(e.target.value)}
                     className="pl-10"
                   />
                 </div>
 
-                {/* Tourist Spots List */}
-                <div className="space-y-3">
-                  {getFilteredBhayaderSpots().map((spot, index) => (
-                    <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={spot.image} 
-                          alt={spot.name}
-                          className="w-16 h-12 object-cover rounded-md flex-shrink-0"
-                          loading="lazy"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-foreground">{spot.name}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {spot.cost === 'free' ? 'Free cost' : spot.cost ? `${spot.cost.charAt(0).toUpperCase() + spot.cost.slice(1)} cost` : ''}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm font-medium text-primary">{spot.distance}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {getFilteredBhayaderSpots().length === 0 && spotSearchQuery.trim() && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      {spotSearchQuery.toLowerCase().includes('bhayander') && spotSearchQuery.toLowerCase().includes('station') 
-                        ? 'No tourist spots found matching your search.' 
-                        : 'No information available for this location. Try searching for "Bhayander Station".'}
-                    </p>
+                {/* Loading State */}
+                {spotsLoading && (
+                  <div className="flex items-center justify-center py-8 space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    <p className="text-muted-foreground">Finding famous tourist spots near your location...</p>
                   </div>
                 )}
-                
-                {!spotSearchQuery.trim() && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Search for "Bhayander Station" to see tourist spots.</p>
-                  </div>
+
+                {/* Tourist Spots List */}
+                {!spotsLoading && (
+                  <>
+                    <div className="space-y-3">
+                      {getFilteredBhayaderSpots().map((spot, index) => (
+                        <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={spot.image} 
+                              alt={spot.name}
+                              className="w-16 h-12 object-cover rounded-md flex-shrink-0"
+                              loading="lazy"
+                            />
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-foreground">{spot.name}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {spot.cost === 'free' ? 'Free cost' : spot.cost ? `${spot.cost.charAt(0).toUpperCase() + spot.cost.slice(1)} cost` : ''}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-medium text-primary">{spot.distance}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {getFilteredBhayaderSpots().length === 0 && spotSearchQuery.trim() && (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">
+                          {spotSearchQuery.toLowerCase().includes('bhayander') && spotSearchQuery.toLowerCase().includes('station') 
+                            ? 'No tourist spots found matching your search.' 
+                            : 'No information available for this location. Try searching for "Bhayander Station".'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!spotSearchQuery.trim() && (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">Search for "Bhayander Station" to see tourist spots.</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
