@@ -65,18 +65,78 @@ const TripAssistDashboard: React.FC = () => {
 
   // Fixed tourist spots data for Bhayander Station
   const bhayaderSpots = [
-    { name: 'Uttan Beach', cost: 'medium', distance: '10.1 km' },
-    { name: 'Ghodbunder Fort', cost: 'free', distance: '14.5 km' },
-    { name: 'Gorai Beach', cost: 'low', distance: '13.7 km' },
-    { name: 'Water Kingdom', cost: 'medium', distance: '16.4 km' },
-    { name: 'Khadi Sunset Point', cost: 'free', distance: '950 m' },
-    { name: 'Global Vipassana Pagoda', cost: 'free', distance: '16.4 km' },
-    { name: 'Maxus Mall', cost: 'medium', distance: '2.4 km' },
-    { name: 'Sanjay Gandhi National Park', cost: 'low', distance: '10.8 km' },
-    { name: 'Shri Radhagiridhari Temple, ISKCON', cost: 'free', distance: '5.9 km' },
-    { name: 'Our Lady of Velankanni Shrine, Bhatebunder (Uttan)', cost: 'free', distance: '11.4 km' },
-    { name: 'Gaimukh Chowpatty', cost: 'low', distance: '14.5 km' },
-    { name: 'Shree L R Tiwari College of Engineering', cost: 'free', distance: '3.6 km' }
+    { 
+      name: 'Uttan Beach', 
+      cost: 'medium', 
+      distance: '10.1 km',
+      image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Ghodbunder Fort', 
+      cost: 'free', 
+      distance: '14.5 km',
+      image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Gorai Beach', 
+      cost: 'low', 
+      distance: '13.7 km',
+      image: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Water Kingdom', 
+      cost: 'medium', 
+      distance: '16.4 km',
+      image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Khadi Sunset Point', 
+      cost: 'free', 
+      distance: '950 m',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Global Vipassana Pagoda', 
+      cost: 'free', 
+      distance: '16.4 km',
+      image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Maxus Mall', 
+      cost: 'medium', 
+      distance: '2.4 km',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Sanjay Gandhi National Park', 
+      cost: 'low', 
+      distance: '10.8 km',
+      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Shri Radhagiridhari Temple, ISKCON', 
+      cost: 'free', 
+      distance: '5.9 km',
+      image: 'https://images.unsplash.com/photo-1609792858967-8d5ad5031dca?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Our Lady of Velankanni Shrine, Bhatebunder (Uttan)', 
+      cost: 'free', 
+      distance: '11.4 km',
+      image: 'https://images.unsplash.com/photo-1548625361-ac2a31ba062e?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Gaimukh Chowpatty', 
+      cost: 'low', 
+      distance: '14.5 km',
+      image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=80&fit=crop&crop=center'
+    },
+    { 
+      name: 'Shree L R Tiwari College of Engineering', 
+      cost: 'free', 
+      distance: '3.6 km',
+      image: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=100&h=80&fit=crop&crop=center'
+    }
   ];
   const { toast } = useToast();
   const { user } = useAuth();
@@ -211,14 +271,19 @@ const TripAssistDashboard: React.FC = () => {
     return filtered;
   };
 
-  // Filter Bhayander spots based on search
+  // Filter Bhayander spots based on search - only show results for "Bhayander station"
   const getFilteredBhayaderSpots = () => {
-    if (!spotSearchQuery.trim()) return bhayaderSpots;
+    if (!spotSearchQuery.trim()) return [];
     
     const query = spotSearchQuery.toLowerCase();
-    return bhayaderSpots.filter(spot =>
-      spot.name.toLowerCase().includes(query)
-    );
+    
+    // Only show results if searching for "bhayander station"
+    if (query.includes('bhayander') && query.includes('station')) {
+      return bhayaderSpots;
+    }
+    
+    // Return empty array for any other search
+    return [];
   };
 
   const handlePlaceSearch = () => {
@@ -767,11 +832,17 @@ const TripAssistDashboard: React.FC = () => {
                 <div className="space-y-3">
                   {getFilteredBhayaderSpots().map((spot, index) => (
                     <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={spot.image} 
+                          alt={spot.name}
+                          className="w-16 h-12 object-cover rounded-md flex-shrink-0"
+                          loading="lazy"
+                        />
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground">{spot.name}</h3>
                           <p className="text-sm text-muted-foreground mt-1">
-                            {spot.cost === 'free' ? 'Free cost' : `${spot.cost.charAt(0).toUpperCase() + spot.cost.slice(1)} cost`}
+                            {spot.cost === 'free' ? 'Free cost' : spot.cost ? `${spot.cost.charAt(0).toUpperCase() + spot.cost.slice(1)} cost` : ''}
                           </p>
                         </div>
                         <div className="text-right">
@@ -782,9 +853,19 @@ const TripAssistDashboard: React.FC = () => {
                   ))}
                 </div>
                 
-                {getFilteredBhayaderSpots().length === 0 && (
+                {getFilteredBhayaderSpots().length === 0 && spotSearchQuery.trim() && (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No tourist spots found matching your search.</p>
+                    <p className="text-muted-foreground">
+                      {spotSearchQuery.toLowerCase().includes('bhayander') && spotSearchQuery.toLowerCase().includes('station') 
+                        ? 'No tourist spots found matching your search.' 
+                        : 'No information available for this location. Try searching for "Bhayander Station".'}
+                    </p>
+                  </div>
+                )}
+                
+                {!spotSearchQuery.trim() && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Search for "Bhayander Station" to see tourist spots.</p>
                   </div>
                 )}
               </CardContent>
