@@ -61,6 +61,23 @@ const TripAssistDashboard: React.FC = () => {
   const [touristSpots, setTouristSpots] = useState<TouristSpot[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(50); // km
+  const [spotSearchQuery, setSpotSearchQuery] = useState<string>('');
+
+  // Fixed tourist spots data for Bhayander Station
+  const bhayaderSpots = [
+    { name: 'Uttan Beach', cost: 'medium', distance: '10.1 km' },
+    { name: 'Ghodbunder Fort', cost: 'free', distance: '14.5 km' },
+    { name: 'Gorai Beach', cost: 'low', distance: '13.7 km' },
+    { name: 'Water Kingdom', cost: 'medium', distance: '16.4 km' },
+    { name: 'Khadi Sunset Point', cost: 'free', distance: '950 m' },
+    { name: 'Global Vipassana Pagoda', cost: 'free', distance: '16.4 km' },
+    { name: 'Maxus Mall', cost: 'medium', distance: '2.4 km' },
+    { name: 'Sanjay Gandhi National Park', cost: 'low', distance: '10.8 km' },
+    { name: 'Shri Radhagiridhari Temple, ISKCON', cost: 'free', distance: '5.9 km' },
+    { name: 'Our Lady of Velankanni Shrine, Bhatebunder (Uttan)', cost: 'free', distance: '11.4 km' },
+    { name: 'Gaimukh Chowpatty', cost: 'low', distance: '14.5 km' },
+    { name: 'Shree L R Tiwari College of Engineering', cost: 'free', distance: '3.6 km' }
+  ];
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -192,6 +209,16 @@ const TripAssistDashboard: React.FC = () => {
     }
 
     return filtered;
+  };
+
+  // Filter Bhayander spots based on search
+  const getFilteredBhayaderSpots = () => {
+    if (!spotSearchQuery.trim()) return bhayaderSpots;
+    
+    const query = spotSearchQuery.toLowerCase();
+    return bhayaderSpots.filter(spot =>
+      spot.name.toLowerCase().includes(query)
+    );
   };
 
   const handlePlaceSearch = () => {
@@ -717,115 +744,51 @@ const TripAssistDashboard: React.FC = () => {
 
           {/* Tourist Spots Tab */}
           <TabsContent value="spots">
-            <div className="space-y-6">
-              {/* Search and Filters */}
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Search className="h-5 w-5" />
-                    Find Tourist Spots Near You
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Search tourist spots..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    <div className="w-32">
-                      <Input
-                        type="number"
-                        placeholder="Radius (km)"
-                        value={searchRadius}
-                        onChange={(e) => setSearchRadius(Number(e.target.value))}
-                      />
-                    </div>
-                    <Button onClick={handlePlaceSearch} disabled={searchLoading}>
-                      {searchLoading ? 'Searching...' : 'Search'}
-                    </Button>
-                  </div>
-                  
-                  {locationLoading && (
-                    <p className="text-sm text-muted-foreground">Getting your location...</p>
-                  )}
-                  
-                  {locationError && (
-                    <p className="text-sm text-destructive">Location access denied. Enable location for better results.</p>
-                  )}
-                </CardContent>
-              </Card>
+            <Card className="shadow-card">
+              <CardHeader className="bg-gradient-sunset text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Tourist Spots near Bhayander Station
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tourist spots..."
+                    value={spotSearchQuery}
+                    onChange={(e) => setSpotSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
 
-              {/* Map View - Temporarily disabled to fix render error */}
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>Map View</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-96 w-full rounded-lg bg-muted/20 grid place-items-center text-sm text-muted-foreground">
-                    Map temporarily disabled - working on fix
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Tourist Spots List */}
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Tourist Spots ({getFilteredTouristSpots().length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {getFilteredTouristSpots().map((spot) => (
-                      <div key={spot.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold">{spot.name}</h3>
-                          <Badge 
-                            variant={spot.cost_level === 'low' ? 'secondary' : spot.cost_level === 'medium' ? 'default' : 'destructive'}
-                          >
-                            {spot.cost_level} cost
-                          </Badge>
+                {/* Tourist Spots List */}
+                <div className="space-y-3">
+                  {getFilteredBhayaderSpots().map((spot, index) => (
+                    <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-foreground">{spot.name}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {spot.cost === 'free' ? 'Free cost' : `${spot.cost.charAt(0).toUpperCase() + spot.cost.slice(1)} cost`}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">{spot.description}</p>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Badge variant="outline">{spot.category}</Badge>
-                            {spot.rating && (
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3 w-3 fill-current text-yellow-500" />
-                                <span className="text-sm">{spot.rating}</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{spot.location}</p>
-                          {userLocation && (
-                            <p className="text-xs text-muted-foreground">
-                              Distance: {calculateDistance(
-                                userLocation[0], userLocation[1],
-                                spot.latitude, spot.longitude
-                              ).toFixed(1)} km
-                            </p>
-                          )}
+                        <div className="text-right">
+                          <span className="text-sm font-medium text-primary">{spot.distance}</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  
-                  {getFilteredTouristSpots().length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">No tourist spots found in your area.</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Try increasing the search radius or adjusting your search terms.
-                      </p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                  ))}
+                </div>
+                
+                {getFilteredBhayaderSpots().length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No tourist spots found matching your search.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* AI Chatbot Tab */}
