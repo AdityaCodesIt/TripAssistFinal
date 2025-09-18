@@ -63,6 +63,7 @@ const TripAssistDashboard: React.FC = () => {
   const [searchRadius, setSearchRadius] = useState<number>(50); // km
   const [spotSearchQuery, setSpotSearchQuery] = useState<string>('');
   const [spotsLoading, setSpotsLoading] = useState<boolean>(false);
+  const [visibleSpots, setVisibleSpots] = useState<number>(0);
 
   // Fixed tourist spots data for Bhayander Station
   const bhayaderSpots = [
@@ -290,16 +291,25 @@ const TripAssistDashboard: React.FC = () => {
   // Handle spot search with loading
   const handleSpotSearch = (value: string) => {
     setSpotSearchQuery(value);
+    setVisibleSpots(0); // Reset visible spots
     
     const query = value.toLowerCase();
     if (query.includes('bhayander') && query.includes('station')) {
       setSpotsLoading(true);
-      // Simulate loading for 1.5 seconds
+      // Simulate loading for 5 seconds
       setTimeout(() => {
         setSpotsLoading(false);
-      }, 1500);
+        // Start showing spots one by one after loading completes
+        const totalSpots = bhayaderSpots.length;
+        for (let i = 1; i <= totalSpots; i++) {
+          setTimeout(() => {
+            setVisibleSpots(i);
+          }, i * 300); // Show each spot 300ms apart
+        }
+      }, 5000);
     } else {
       setSpotsLoading(false);
+      setVisibleSpots(0);
     }
   };
 
@@ -448,7 +458,7 @@ const TripAssistDashboard: React.FC = () => {
     });
   };
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (!currentFeedback.problems || !currentFeedback.rating) {
       toast({
         title: "Missing information",
@@ -458,22 +468,65 @@ const TripAssistDashboard: React.FC = () => {
       return;
     }
 
-    const newFeedback: Feedback = {
-      id: Date.now().toString(),
-      tripId: currentFeedback.tripId || '',
-      problems: currentFeedback.problems || '',
-      comments: currentFeedback.comments || '',
-      rating: currentFeedback.rating || 1,
-      createdAt: new Date().toISOString(),
-    };
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to submit feedback.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setFeedback([...feedback, newFeedback]);
-    setCurrentFeedback({});
-    
-    toast({
-      title: "Feedback submitted!",
-      description: "Thank you for your valuable feedback.",
-    });
+    try {
+      const feedbackData = {
+        user_id: user.id,
+        type: 'manual_feedback',
+        user_message: currentFeedback.problems || '',
+        ai_response: null,
+        rating: currentFeedback.rating || 1,
+        suggestions: currentFeedback.comments ? { comments: currentFeedback.comments } : null,
+      };
+
+      const { data, error } = await supabase
+        .from('feedback')
+        .insert([feedbackData])
+        .select();
+
+      if (error) {
+        console.error('Error saving feedback:', error);
+        toast({
+          title: "Error saving feedback",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      const newFeedback: Feedback = {
+        id: data[0].id,
+        tripId: currentFeedback.tripId || '',
+        problems: currentFeedback.problems || '',
+        comments: currentFeedback.comments || '',
+        rating: currentFeedback.rating || 1,
+        createdAt: data[0].created_at,
+      };
+
+      setFeedback([...feedback, newFeedback]);
+      setCurrentFeedback({});
+      
+      toast({
+        title: "Feedback submitted!",
+        description: "Thank you for your valuable feedback.",
+      });
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving feedback.",
+        variant: "destructive",
+      });
+    }
   };
 
 
@@ -857,8 +910,16 @@ const TripAssistDashboard: React.FC = () => {
                 {!spotsLoading && (
                   <>
                     <div className="space-y-3">
-                      {getFilteredBhayaderSpots().map((spot, index) => (
-                        <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
+                      {getFilteredBhayaderSpots().slice(0, visibleSpots).map((spot, index) => (
+                        <div 
+                          key={index} 
+                          className={`border rounded-lg p-4 hover:shadow-md transition-all duration-500 bg-card transform ${
+                            index < visibleSpots ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                          }`}
+                          style={{
+                            transitionDelay: `${index * 100}ms`
+                          }}
+                        >
                           <div className="flex items-center gap-3">
                             <img 
                               src={spot.image} 

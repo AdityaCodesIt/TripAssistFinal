@@ -185,7 +185,7 @@ const ChatbotInterface: React.FC = () => {
                 value={currentInput}
                 onChange={(e) => setCurrentInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Share your travel experiences..."
+                placeholder="Search..."
                 className="flex-1 min-h-[60px] resize-none"
                 disabled={isTyping}
               />
