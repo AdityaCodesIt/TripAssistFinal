@@ -314,136 +314,164 @@ const TripAssistDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-secondary/30 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-secondary/30 p-2 sm:p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-travel bg-clip-text text-transparent">
+        <div className="text-center space-y-2 sm:space-y-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-travel bg-clip-text text-transparent">
             TripAssist Dashboard
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg px-2">
             Your complete travel data collection and assistance platform
           </p>
           {userLocation && (
-            <Badge variant="secondary" className="gap-2">
-              <MapPin className="h-4 w-4" />
+            <Badge variant="secondary" className="gap-2 text-xs sm:text-sm">
+              <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
               Location detected: {userLocation[0].toFixed(2)}, {userLocation[1].toFixed(2)}
             </Badge>
           )}
         </div>
 
-        <Tabs defaultValue="trips" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-card shadow-card">
-            <TabsTrigger value="trips">Trip Entry</TabsTrigger>
-            <TabsTrigger value="records">Trip Records</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="spots">Tourist Spots</TabsTrigger>
-            <TabsTrigger value="chatbot">AI Assistant</TabsTrigger>
+        <Tabs defaultValue="trips" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-card shadow-card h-auto p-1">
+            <TabsTrigger value="trips" className="text-xs sm:text-sm">Trip Entry</TabsTrigger>
+            <TabsTrigger value="records" className="text-xs sm:text-sm">Records</TabsTrigger>
+            <TabsTrigger value="feedback" className="text-xs sm:text-sm hidden sm:block">Feedback</TabsTrigger>
+            <TabsTrigger value="spots" className="text-xs sm:text-sm">Spots</TabsTrigger>
+            <TabsTrigger value="chatbot" className="text-xs sm:text-sm">AI Assistant</TabsTrigger>
           </TabsList>
 
           {/* Trip Entry Tab */}
           <TabsContent value="trips">
             <Card className="shadow-card">
-              <CardHeader className="bg-gradient-sky text-primary-foreground rounded-t-lg">
-                <CardTitle className="flex items-center gap-2">
-                  <PlusCircle className="h-5 w-5" />
+              <CardHeader className="bg-gradient-sky text-primary-foreground rounded-t-lg p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <PlusCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   Submit New Trip
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="origin">Origin</Label>
-                    <Input
-                      id="origin"
-                      placeholder="Starting location"
-                      value={currentTrip.origin || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, origin: e.target.value })}
-                    />
+              <CardContent className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
+                {/* Essential Fields Section */}
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="origin" className="text-sm font-medium">Origin *</Label>
+                      <Input
+                        id="origin"
+                        placeholder="Starting location"
+                        value={currentTrip.origin || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, origin: e.target.value })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="destination" className="text-sm font-medium">Destination *</Label>
+                      <Input
+                        id="destination"
+                        placeholder="Destination location"
+                        value={currentTrip.destination || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, destination: e.target.value })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="destination">Destination</Label>
-                    <Input
-                      id="destination"
-                      placeholder="Destination location"
-                      value={currentTrip.destination || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, destination: e.target.value })}
-                    />
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="departure" className="text-sm font-medium">Departure Time *</Label>
+                      <Input
+                        id="departure"
+                        type="datetime-local"
+                        value={currentTrip.departureTime || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, departureTime: e.target.value })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="arrival" className="text-sm font-medium">Arrival Time *</Label>
+                      <Input
+                        id="arrival"
+                        type="datetime-local"
+                        value={currentTrip.arrivalTime || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, arrivalTime: e.target.value })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="departure">Departure Time</Label>
-                    <Input
-                      id="departure"
-                      type="datetime-local"
-                      value={currentTrip.departureTime || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, departureTime: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="arrival">Arrival Time</Label>
-                    <Input
-                      id="arrival"
-                      type="datetime-local"
-                      value={currentTrip.arrivalTime || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, arrivalTime: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="travelMode">Travel Mode</Label>
-                    <select
-                      id="travelMode"
-                      className="w-full p-2 border rounded-md"
-                      value={currentTrip.travelMode || 'car'}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, travelMode: e.target.value as any })}
-                    >
-                      <option value="car">Car</option>
-                      <option value="plane">Plane</option>
-                      <option value="train">Train</option>
-                      <option value="bus">Bus</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="purpose">Purpose</Label>
-                    <Input
-                      id="purpose"
-                      placeholder="Business, Leisure, etc."
-                      value={currentTrip.purpose || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, purpose: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cost">Cost ($)</Label>
-                    <Input
-                      id="cost"
-                      type="number"
-                      placeholder="0"
-                      value={currentTrip.cost || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, cost: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="companions">Number of Companions</Label>
-                    <Input
-                      id="companions"
-                      type="number"
-                      placeholder="1"
-                      value={currentTrip.companions || ''}
-                      onChange={(e) => setCurrentTrip({ ...currentTrip, companions: Number(e.target.value) })}
-                    />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="travelMode" className="text-sm font-medium">Travel Mode *</Label>
+                      <select
+                        id="travelMode"
+                        className="w-full h-10 sm:h-11 p-2 border border-input rounded-md bg-background text-sm"
+                        value={currentTrip.travelMode || 'car'}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, travelMode: e.target.value as any })}
+                      >
+                        <option value="car">🚗 Car</option>
+                        <option value="plane">✈️ Plane</option>
+                        <option value="train">🚆 Train</option>
+                        <option value="bus">🚌 Bus</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="purpose" className="text-sm font-medium">Purpose *</Label>
+                      <Input
+                        id="purpose"
+                        placeholder="Business, Leisure, etc."
+                        value={currentTrip.purpose || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, purpose: e.target.value })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Additional Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Any additional information about the trip"
-                    value={currentTrip.notes || ''}
-                    onChange={(e) => setCurrentTrip({ ...currentTrip, notes: e.target.value })}
-                  />
-                </div>
+
+                {/* Optional Fields - Collapsible on Mobile */}
+                <details className="sm:block">
+                  <summary className="sm:hidden cursor-pointer text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                    Additional Details (Optional)
+                    <span className="text-xs">▼</span>
+                  </summary>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cost" className="text-sm font-medium">Cost ($)</Label>
+                      <Input
+                        id="cost"
+                        type="number"
+                        placeholder="0"
+                        value={currentTrip.cost || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, cost: Number(e.target.value) })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companions" className="text-sm font-medium">Number of Companions</Label>
+                      <Input
+                        id="companions"
+                        type="number"
+                        placeholder="1"
+                        value={currentTrip.companions || ''}
+                        onChange={(e) => setCurrentTrip({ ...currentTrip, companions: Number(e.target.value) })}
+                        className="h-10 sm:h-11"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 mt-3 sm:mt-4">
+                    <Label htmlFor="notes" className="text-sm font-medium">Additional Notes</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Any additional information about the trip"
+                      value={currentTrip.notes || ''}
+                      onChange={(e) => setCurrentTrip({ ...currentTrip, notes: e.target.value })}
+                      className="min-h-20 sm:min-h-24"
+                    />
+                  </div>
+                </details>
+
                 <Button 
                   onClick={handleSubmitTrip}
-                  className="w-full bg-gradient-sky hover:opacity-90 shadow-travel"
+                  className="w-full bg-gradient-sky hover:opacity-90 shadow-travel h-11 sm:h-12 text-sm sm:text-base font-medium"
                 >
                   Submit Trip
                 </Button>
