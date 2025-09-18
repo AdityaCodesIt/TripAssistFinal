@@ -397,10 +397,10 @@ const TripAssistDashboard: React.FC = () => {
         </div>
 
         <Tabs defaultValue="trips" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-card shadow-card h-auto p-1">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 bg-card shadow-card h-auto p-1">
             <TabsTrigger value="trips" className="text-xs sm:text-sm">Trip Entry</TabsTrigger>
             <TabsTrigger value="records" className="text-xs sm:text-sm">Records</TabsTrigger>
-            <TabsTrigger value="feedback" className="text-xs sm:text-sm hidden sm:block">Feedback</TabsTrigger>
+            <TabsTrigger value="feedback" className="text-xs sm:text-sm">Feedback</TabsTrigger>
             <TabsTrigger value="spots" className="text-xs sm:text-sm">Spots</TabsTrigger>
             <TabsTrigger value="chatbot" className="text-xs sm:text-sm">AI Assistant</TabsTrigger>
           </TabsList>
