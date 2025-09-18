@@ -124,7 +124,7 @@ const TripAssistDashboard: React.FC = () => {
       name: 'Our Lady of Velankanni Shrine, Bhatebunder (Uttan)', 
       cost: 'free', 
       distance: '11.4 km',
-      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c9a4?w=100&h=80&fit=crop&crop=center'
+      image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=100&h=80&fit=crop&crop=center'
     },
     { 
       name: 'Gaimukh Chowpatty', 
