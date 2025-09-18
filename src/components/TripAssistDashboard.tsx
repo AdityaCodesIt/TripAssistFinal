@@ -304,7 +304,7 @@ const TripAssistDashboard: React.FC = () => {
         for (let i = 1; i <= totalSpots; i++) {
           setTimeout(() => {
             setVisibleSpots(i);
-          }, i * 300); // Show each spot 300ms apart
+          }, i * 800); // Show each spot 800ms apart for slower animation
         }
       }, 5000);
     } else {
@@ -913,11 +913,12 @@ const TripAssistDashboard: React.FC = () => {
                       {getFilteredBhayaderSpots().slice(0, visibleSpots).map((spot, index) => (
                         <div 
                           key={index} 
-                          className={`border rounded-lg p-4 hover:shadow-md transition-all duration-500 bg-card transform ${
-                            index < visibleSpots ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                          className={`border rounded-lg p-4 hover:shadow-md transition-all duration-700 bg-card transform ${
+                            index < visibleSpots ? 'opacity-100 translate-y-0 animate-fade-in' : 'opacity-0 translate-y-4'
                           }`}
                           style={{
-                            transitionDelay: `${index * 100}ms`
+                            transitionDelay: `${index * 200}ms`,
+                            animationDelay: `${index * 200}ms`
                           }}
                         >
                           <div className="flex items-center gap-3">
@@ -953,7 +954,7 @@ const TripAssistDashboard: React.FC = () => {
                     
                     {!spotSearchQuery.trim() && (
                       <div className="text-center py-8">
-                        <p className="text-muted-foreground">Search for "Bhayander Station" to see tourist spots.</p>
+                        <p className="text-muted-foreground">Search for any station to see tourist spots.</p>
                       </div>
                     )}
                   </>
