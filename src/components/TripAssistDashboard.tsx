@@ -382,7 +382,7 @@ const TripAssistDashboard: React.FC = () => {
         mode: currentTrip.travelMode!,
         start_time: startTime,
         end_time: endTime,
-        additional_notes: `Purpose: ${currentTrip.purpose}${currentTrip.notes ? `\nNotes: ${currentTrip.notes}` : ''}${currentTrip.cost ? `\nCost: $${currentTrip.cost}` : ''}${currentTrip.companions ? `\nCompanions: ${currentTrip.companions}` : ''}`
+        additional_notes: `Purpose: ${currentTrip.purpose}${currentTrip.notes ? `\nNotes: ${currentTrip.notes}` : ''}${currentTrip.cost ? `\nCost: ₹${currentTrip.cost}` : ''}${currentTrip.companions ? `\nCompanions: ${currentTrip.companions}` : ''}`
       };
 
       console.log('Submitting trip data:', tripData);
@@ -608,7 +608,7 @@ const TripAssistDashboard: React.FC = () => {
                   </summary>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="cost" className="text-sm font-medium">Cost ($)</Label>
+                      <Label htmlFor="cost" className="text-sm font-medium">Cost (₹)</Label>
                       <Input
                         id="cost"
                         type="number"
@@ -701,7 +701,7 @@ const TripAssistDashboard: React.FC = () => {
                           <td className="p-2">
                             <div className="flex items-center gap-2">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              ${trip.cost}
+                              ₹{trip.cost}
                             </div>
                           </td>
                           <td className="p-2">
