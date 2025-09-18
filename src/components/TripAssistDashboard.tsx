@@ -480,7 +480,7 @@ const TripAssistDashboard: React.FC = () => {
     try {
       const feedbackData = {
         user_id: user.id,
-        type: 'manual_feedback',
+        type: 'trip_feedback',
         user_message: currentFeedback.problems || '',
         ai_response: null,
         rating: currentFeedback.rating || 1,
